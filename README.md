@@ -4,7 +4,7 @@ O **SimplexLab** é um sistema web educacional para alunos de graduação aprend
 
 ## Tecnologias
 
-- **Frontend:** Next.js 16, React 19, TypeScript, Tailwind CSS 4 e Plotly.js.
+- **Frontend:** Next.js 16, React 19, TypeScript, Tailwind CSS 4, Plotly.js e KaTeX para renderização matemática.
 - **Backend:** Python, FastAPI e Pydantic.
 - **Banco:** SQLite local.
 - **Comunicação:** API REST.
@@ -44,7 +44,7 @@ O motor matemático fica isolado em `backend/services/simplex_service.py`. O cá
 ## Funcionalidades do MVP
 
 - landing page e navegação responsiva;
-- trilha “Aprender” com 15 conceitos progressivos;
+- trilha “Aprender” com 16 tópicos progressivos, incluindo interpretação gráfica da região viável;
 - biblioteca SQLite com 18 problemas: 6 fáceis, 6 intermediários e 6 difíceis;
 - filtro por dificuldade;
 - formulário manual pré-formatado para `x1` e `x2`;
