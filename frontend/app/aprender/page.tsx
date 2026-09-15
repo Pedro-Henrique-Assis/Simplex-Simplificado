@@ -482,7 +482,7 @@ const topics: Topic[] = [
     application:
       "A função objetivo pode representar lucro, faturamento, produtividade, quantidade produzida, custo, distância, tempo ou outro indicador que desejamos maximizar ou minimizar.",
     example:
-      "Na oficina, cada peça A gera 30 reais de lucro e cada peça B gera 40 reais. Se forem produzidas $x_{1}$ unidades de A e $x_{2}$ unidades de B, o lucro total será formado pela soma de $30x_{1}$ com $40x_{2$.",
+      "Na oficina, cada peça A gera 30 reais de lucro e cada peça B gera 40 reais. Se forem produzidas $x_{1}$ unidades de A e $x_{2}$ unidades de B, o lucro total será formado pela soma de $30x_{1}$ com $40x_{2}$.",
     math: String.raw`
       \max Z = 30x_{1} + 40x_{2}
     `,
