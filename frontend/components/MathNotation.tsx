@@ -47,6 +47,48 @@ export function fractionToLatex(
   return trimmed;
 }
 
+function isSimpleFraction(value: string): boolean {
+  return /^-?\d+\/\d+$/.test(value.trim());
+}
+
+export function divisionToLatex(
+  dividend: string,
+  divisor: string,
+  result?: string,
+): string {
+  const dividendIsFraction = isSimpleFraction(dividend);
+  const divisorIsFraction = isSimpleFraction(divisor);
+
+  const dividendLatex = fractionToLatex(
+    dividend,
+    dividendIsFraction,
+  );
+
+  const divisorLatex = fractionToLatex(
+    divisor,
+    divisorIsFraction,
+  );
+
+  let operation: string;
+
+  if (dividendIsFraction || divisorIsFraction) {
+    operation =
+      `${dividendLatex} \\;\\div\\; ${divisorLatex}`;
+  } else {
+    operation =
+      `\\dfrac{${dividendLatex}}{${divisorLatex}}`;
+  }
+
+  if (result === undefined) {
+    return operation;
+  }
+
+  return `${operation} = ${fractionToLatex(
+    result,
+    true,
+  )}`;
+}
+
 export function expressionToLatex(expression: string): string {
   let result = expression.trim();
 
@@ -142,18 +184,21 @@ export function operationToLatex(
         : `${symbolToLatex(target)}^{\\prime}`;
 
     const divisorIsFraction =
-        /^-?\d+\/\d+$/.test(divisor.trim());
+        isSimpleFraction(divisor);
 
     if (divisorIsFraction) {
         return `${targetLatex} = ${symbolToLatex(
         source,
-        )} \\div ${fractionToLatex(divisor, true)}`;
+        )} \\;\\div\\; ${fractionToLatex(
+        divisor,
+        true,
+        )}`;
     }
 
     return `${targetLatex} = \\dfrac{${symbolToLatex(
         source,
     )}}{${fractionToLatex(divisor)}}`;
-}
+  }
 
   const elimination = normalized.match(
     /^(L\d+|Z) nova = (L\d+|Z) ([+-]) (.+) × (L\d+) nova$/,

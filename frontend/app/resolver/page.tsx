@@ -20,6 +20,7 @@ import {
   InlineFormula,
   MathBlock,
   MathText,
+  divisionToLatex,
   expressionToLatex,
   fractionToLatex,
   operationToLatex,
@@ -1392,15 +1393,10 @@ function CurrentStep({
                 {ratio.eligible && ratio.ratio ? (
                   <div className="rounded-md px-2 py-2 text-lg leading-none text-black/75">
                     <InlineFormula
-                      math={String.raw`\displaystyle \frac{${fractionToLatex(
+                      math={`\\displaystyle ${divisionToLatex(
                         ratio.rhs.fraction,
-                        true,
-                      )}}{${fractionToLatex(
                         ratio.coefficient.fraction,
-                        true,
-                      )}} = ${fractionToLatex(
                         ratio.ratio.fraction,
-                        true,
                       )}`}
                     />
                   </div>
