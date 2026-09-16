@@ -47,22 +47,6 @@ export function fractionToLatex(
   return trimmed;
 }
 
-function nestedFractionToLatex(value: string): string {
-  const trimmed = value.trim();
-
-  const fraction = trimmed.match(
-    /^(-?)(\d+)\/(\d+)$/,
-  );
-
-  if (fraction) {
-    const [, sign, numerator, denominator] = fraction;
-
-    return `${sign}\\tfrac{${numerator}}{${denominator}}`;
-  }
-
-  return fractionToLatex(trimmed);
-}
-
 export function expressionToLatex(expression: string): string {
   let result = expression.trim();
 
@@ -157,10 +141,19 @@ export function operationToLatex(
         ? "Z^{\\prime}"
         : `${symbolToLatex(target)}^{\\prime}`;
 
+    const divisorIsFraction =
+        /^-?\d+\/\d+$/.test(divisor.trim());
+
+    if (divisorIsFraction) {
+        return `${targetLatex} = ${symbolToLatex(
+        source,
+        )} \\div ${fractionToLatex(divisor, true)}`;
+    }
+
     return `${targetLatex} = \\dfrac{${symbolToLatex(
         source,
-    )}}{\\,${nestedFractionToLatex(divisor)}\\,}`;
-  }
+    )}}{${fractionToLatex(divisor)}}`;
+}
 
   const elimination = normalized.match(
     /^(L\d+|Z) nova = (L\d+|Z) ([+-]) (.+) × (L\d+) nova$/,

@@ -1514,27 +1514,25 @@ function CurrentStep({
         }`}
         title="Pivoteamento: normalizar e zerar a coluna"
       >
-        <p>
+        <p className="leading-8">
           O elemento pivô é{" "}
           <InlineFormula
             math={fractionToLatex(
-              iteration.pivot
-                .fraction,
+              iteration.pivot.fraction,
+              true,
             )}
+            className="mx-1 inline-flex items-center text-[1.05em]"
           />
-          , localizado no
-          encontro da coluna de{" "}
+          , localizado no encontro da coluna de{" "}
           <InlineFormula
             math={symbolToLatex(
-              iteration
-                .entering_variable,
+              iteration.entering_variable,
             )}
           />{" "}
           com a linha de{" "}
           <InlineFormula
             math={symbolToLatex(
-              iteration
-                .leaving_variable,
+              iteration.leaving_variable,
             )}
           />
           .
