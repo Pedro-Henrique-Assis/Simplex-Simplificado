@@ -197,7 +197,3 @@ Cada etapa procura responder cinco perguntas:
 5. Qual é o próximo passo?
 
 O objetivo é transmitir a sensação de estar aprendendo Simplex com um tutor digital, e não apenas usando uma calculadora.
-
-## Próximos passos possíveis
-
-Depois de validar o MVP com alunos e professor, evoluções naturais seriam histórico de tentativas, métricas de aprendizagem, exercícios parametrizados, suporte a minimização e métodos Big M/duas fases. Essas extensões devem ser adicionadas apenas se contribuírem diretamente para o aprendizado.
