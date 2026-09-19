@@ -99,6 +99,69 @@ function mathToken(
   return `$${symbolToLatex(symbol)}$`;
 }
 
+function normalizeNumericInput(
+  rawValue: string,
+  allowNegative = false,
+): string | null {
+
+  const normalized = rawValue
+    .replace(/\s+/g, "")
+    .replace(/,/g, ".");
+
+
+  if (normalized === "") {
+    return "";
+  }
+
+  const pattern = allowNegative
+    ? /^-?\d*(?:\.\d*)?$/
+    : /^\d*(?:\.\d*)?$/;
+
+  if (!pattern.test(normalized)) {
+    return null;
+  }
+
+  return normalized;
+}
+
+function finalizeNumericInput(
+  rawValue: string,
+  allowNegative = false,
+): string {
+  const normalized = normalizeNumericInput(
+    rawValue,
+    allowNegative,
+  );
+
+  if (
+    normalized === null ||
+    normalized === "" ||
+    normalized === "." ||
+    normalized === "-" ||
+    normalized === "-."
+  ) {
+    return "";
+  }
+
+  let result = normalized;
+
+  if (result.startsWith(".")) {
+    result = `0${result}`;
+  }
+
+  if (result.startsWith("-.")) {
+    result = `-0${result.slice(1)}`;
+  }
+
+  if (result.endsWith(".")) {
+    result = result.slice(0, -1);
+  }
+
+  return result;
+}
+
+
+
 function ResolverContent() {
   const searchParams =
     useSearchParams();
@@ -245,25 +308,157 @@ function ResolverContent() {
     );
   }
 
+  function updateObjective(
+    field: "x1" | "x2",
+    rawValue: string,
+  ) {
+    if (isLibraryProblem) {
+      return;
+    }
+
+    const normalized = normalizeNumericInput(
+      rawValue,
+      true,
+    );
+
+    if (normalized === null) {
+      return;
+    }
+
+    setObjective((current) => ({
+      ...current,
+      [field]: normalized,
+    }));
+  }
+
+  function finishObjective(
+    field: "x1" | "x2",
+  ) {
+    if (isLibraryProblem) {
+      return;
+    }
+
+    setObjective((current) => ({
+      ...current,
+      [field]: finalizeNumericInput(
+        current[field],
+        true,
+      ),
+    }));
+  }
+
+  function updateNumericConstraint(
+    index: number,
+    field: keyof FormConstraint,
+    rawValue: string,
+  ) {
+    if (isLibraryProblem) {
+      return;
+    }
+
+    const normalized =
+      normalizeNumericInput(
+        rawValue,
+        false,
+      );
+
+    if (normalized === null) {
+      return;
+    }
+
+    updateConstraint(
+      index,
+      field,
+      normalized,
+    );
+  }
+
+  function finishConstraint(
+    index: number,
+    field: keyof FormConstraint,
+  ) {
+    if (isLibraryProblem) {
+      return;
+    }
+
+    setConstraints((current) =>
+      current.map((constraint, i) => {
+        if (i !== index) {
+          return constraint;
+        }
+
+        return {
+          ...constraint,
+          [field]: finalizeNumericInput(
+            constraint[field],
+            false,
+          ),
+        };
+      }),
+    );
+  }
+
   function buildPayload():
     SimplexPayload | null {
     setError("");
 
+    const objectiveValues = [
+      objective.x1,
+      objective.x2,
+    ];
+
     if (
-      objective.x1.trim() ===
-        "" ||
-      objective.x2.trim() === ""
+      objectiveValues.some(
+        (value) =>
+          value == null ||
+          value.trim() === "",
+      )
     ) {
       setError(
-        "Informe os dois coeficientes da função objetivo.",
+        "Preencha todos os coeficientes da função objetivo.",
+      );
+
+      return null;
+    }
+
+    const normalizedObjectiveX1 =
+      normalizeNumericInput(
+        objective.x1,
+        true,
+      );
+
+    const normalizedObjectiveX2 =
+      normalizeNumericInput(
+        objective.x2,
+        true,
+      );
+
+    if (
+      normalizedObjectiveX1 === null ||
+      normalizedObjectiveX2 === null ||
+      normalizedObjectiveX1 === "" ||
+      normalizedObjectiveX2 === "" ||
+      normalizedObjectiveX1 === "." ||
+      normalizedObjectiveX2 === "." ||
+      normalizedObjectiveX1 === "-" ||
+      normalizedObjectiveX2 === "-" ||
+      normalizedObjectiveX1 === "-." ||
+      normalizedObjectiveX2 === "-."
+    ) {
+      setError(
+        "A função objetivo deve conter apenas valores numéricos válidos.",
       );
 
       return null;
     }
 
     const objectiveNumbers = {
-      x1: Number(objective.x1),
-      x2: Number(objective.x2),
+      x1: Number(
+        normalizedObjectiveX1,
+      ),
+      x2: Number(
+        normalizedObjectiveX2,
+      ),
     };
 
     if (
@@ -272,11 +467,18 @@ function ResolverContent() {
       ) ||
       !Number.isFinite(
         objectiveNumbers.x2,
-      ) ||
-      (
-        objectiveNumbers.x1 <= 0 &&
-        objectiveNumbers.x2 <= 0
       )
+    ) {
+      setError(
+        "A função objetivo deve conter apenas valores numéricos.",
+      );
+
+      return null;
+    }
+
+    if (
+      objectiveNumbers.x1 <= 0 &&
+      objectiveNumbers.x2 <= 0
     ) {
       setError(
         "A função objetivo precisa ter pelo menos um coeficiente positivo.",
@@ -296,13 +498,16 @@ function ResolverContent() {
       const constraint =
         constraints[i];
 
+      const values = [
+        constraint.x1,
+        constraint.x2,
+        constraint.result,
+      ];
+
       if (
-        [
-          constraint.x1,
-          constraint.x2,
-          constraint.result,
-        ].some(
+        values.some(
           (value) =>
+            value == null ||
             value.trim() === "",
         )
       ) {
@@ -315,24 +520,63 @@ function ResolverContent() {
         return null;
       }
 
-      const x1 = Number(
-        constraint.x1,
-      );
+      const normalizedX1 =
+        normalizeNumericInput(
+          constraint.x1,
+          false,
+        );
 
-      const x2 = Number(
-        constraint.x2,
-      );
+      const normalizedX2 =
+        normalizeNumericInput(
+          constraint.x2,
+          false,
+        );
 
-      const resultValue = Number(
-        constraint.result,
-      );
+      const normalizedResult =
+        normalizeNumericInput(
+          constraint.result,
+          false,
+        );
+
+      if (
+        normalizedX1 === null ||
+        normalizedX2 === null ||
+        normalizedResult === null ||
+        normalizedX1 === "" ||
+        normalizedX2 === "" ||
+        normalizedResult === "" ||
+        normalizedX1 === "." ||
+        normalizedX2 === "." ||
+        normalizedResult === "."
+      ) {
+        setError(
+          `Use apenas valores numéricos válidos na ${
+            i + 1
+          }ª restrição.`,
+        );
+
+        return null;
+      }
+
+      const x1 =
+        Number(normalizedX1);
+
+      const x2 =
+        Number(normalizedX2);
+
+      const resultValue =
+        Number(
+          normalizedResult,
+        );
 
       if (
         ![
           x1,
           x2,
           resultValue,
-        ].every(Number.isFinite)
+        ].every(
+          Number.isFinite,
+        )
       ) {
         setError(
           `Use apenas valores numéricos na ${
@@ -345,17 +589,37 @@ function ResolverContent() {
 
       if (
         x1 < 0 ||
-        x2 < 0 ||
-        (
-          x1 === 0 &&
-          x2 === 0
-        ) ||
+        x2 < 0
+      ) {
+        setError(
+          `Os coeficientes da ${
+            i + 1
+          }ª restrição não podem ser negativos.`,
+        );
+
+        return null;
+      }
+
+      if (
+        x1 === 0 &&
+        x2 === 0
+      ) {
+        setError(
+          `A ${
+            i + 1
+          }ª restrição precisa possuir pelo menos um coeficiente maior que zero.`,
+        );
+
+        return null;
+      }
+
+      if (
         resultValue <= 0
       ) {
         setError(
-          `Revise a ${
+          `O limite da ${
             i + 1
-          }ª restrição: coeficientes devem ser não negativos e o limite deve ser positivo.`,
+          }ª restrição deve ser maior que zero.`,
         );
 
         return null;
@@ -372,7 +636,9 @@ function ResolverContent() {
     return {
       objective:
         objectiveNumbers,
-      constraints: parsed,
+
+      constraints:
+        parsed,
     };
   }
 
@@ -472,21 +738,32 @@ function ResolverContent() {
                   </span>
 
                   <input
-                    className="w-24 rounded-lg bg-white px-3 py-2 text-black"
-                    type="number"
-                    step="any"
+                    className={`w-24 rounded-lg px-3 py-2 text-black outline-none transition ${
+                      isLibraryProblem
+                        ? "cursor-not-allowed bg-white/80 text-black/50"
+                        : "cursor-text bg-white focus:ring-2 focus:ring-[#80FFF6]"
+                    }`}
+                    type="text"
+                    inputMode="decimal"
+                    autoComplete="off"
+                    required
+                    disabled={isLibraryProblem}
                     value={objective.x1}
                     onChange={(e) =>
-                      setObjective(
-                        (value) => ({
-                          ...value,
-                          x1:
-                            e.target
-                              .value,
-                        }),
+                      updateObjective(
+                        "x1",
+                        e.target.value,
                       )
                     }
+                    onBlur={() =>
+                      finishObjective("x1")
+                    }
                     aria-label="Coeficiente de x1 na função objetivo"
+                    title={
+                      isLibraryProblem
+                        ? "Campo bloqueado para problemas da biblioteca"
+                        : "Informe um valor numérico"
+                    }
                   />
                 </label>
 
@@ -500,21 +777,32 @@ function ResolverContent() {
                   </span>
 
                   <input
-                    className="w-24 rounded-lg bg-white px-3 py-2 text-black"
-                    type="number"
-                    step="any"
+                    className={`w-24 rounded-lg px-3 py-2 text-black outline-none transition ${
+                      isLibraryProblem
+                        ? "cursor-not-allowed bg-white/80 text-black/50"
+                        : "cursor-text bg-white focus:ring-2 focus:ring-[#80FFF6]"
+                    }`}
+                    type="text"
+                    inputMode="decimal"
+                    autoComplete="off"
+                    required
+                    disabled={isLibraryProblem}
                     value={objective.x2}
                     onChange={(e) =>
-                      setObjective(
-                        (value) => ({
-                          ...value,
-                          x2:
-                            e.target
-                              .value,
-                        }),
+                      updateObjective(
+                        "x2",
+                        e.target.value,
                       )
                     }
+                    onBlur={() =>
+                      finishObjective("x2")
+                    }
                     aria-label="Coeficiente de x2 na função objetivo"
+                    title={
+                      isLibraryProblem
+                        ? "Campo bloqueado para problemas da biblioteca"
+                        : "Informe um valor numérico"
+                    }
                   />
                 </label>
 
@@ -545,24 +833,38 @@ function ResolverContent() {
                       </span>
 
                       <input
-                        className="field !w-24"
-                        type="number"
-                        step="any"
-                        min="0"
-                        value={
-                          constraint.x1
-                        }
+                        className={`field !w-24 ${
+                          isLibraryProblem
+                            ? "cursor-not-allowed bg-black/[0.05] text-black/50"
+                            : "cursor-text"
+                        }`}
+                        type="text"
+                        inputMode="decimal"
+                        autoComplete="off"
+                        required
+                        disabled={isLibraryProblem}
+                        value={constraint.x1}
                         onChange={(e) =>
-                          updateConstraint(
+                          updateNumericConstraint(
                             index,
                             "x1",
-                            e.target
-                              .value,
+                            e.target.value,
+                          )
+                        }
+                        onBlur={() =>
+                          finishConstraint(
+                            index,
+                            "x1",
                           )
                         }
                         aria-label={`Coeficiente de x1 na restrição ${
                           index + 1
                         }`}
+                        title={
+                          isLibraryProblem
+                            ? "Campo bloqueado para problemas da biblioteca"
+                            : "Informe um valor numérico não negativo"
+                        }
                       />
 
                       <InlineFormula
@@ -570,24 +872,38 @@ function ResolverContent() {
                       />
 
                       <input
-                        className="field !w-24"
-                        type="number"
-                        step="any"
-                        min="0"
-                        value={
-                          constraint.x2
-                        }
+                        className={`field !w-24 ${
+                          isLibraryProblem
+                            ? "cursor-not-allowed bg-black/[0.05] text-black/50"
+                            : "cursor-text"
+                        }`}
+                        type="text"
+                        inputMode="decimal"
+                        autoComplete="off"
+                        required
+                        disabled={isLibraryProblem}
+                        value={constraint.x2}
                         onChange={(e) =>
-                          updateConstraint(
+                          updateNumericConstraint(
                             index,
                             "x2",
-                            e.target
-                              .value,
+                            e.target.value,
+                          )
+                        }
+                        onBlur={() =>
+                          finishConstraint(
+                            index,
+                            "x2",
                           )
                         }
                         aria-label={`Coeficiente de x2 na restrição ${
                           index + 1
                         }`}
+                        title={
+                          isLibraryProblem
+                            ? "Campo bloqueado para problemas da biblioteca"
+                            : "Informe um valor numérico não negativo"
+                        }
                       />
 
                       <InlineFormula
@@ -595,24 +911,38 @@ function ResolverContent() {
                       />
 
                       <input
-                        className="field !w-28"
-                        type="number"
-                        step="any"
-                        min="0"
-                        value={
-                          constraint.result
-                        }
+                        className={`field !w-28 ${
+                          isLibraryProblem
+                            ? "cursor-not-allowed bg-black/[0.05] text-black/50"
+                            : "cursor-text"
+                        }`}
+                        type="text"
+                        inputMode="decimal"
+                        autoComplete="off"
+                        required
+                        disabled={isLibraryProblem}
+                        value={constraint.result}
                         onChange={(e) =>
-                          updateConstraint(
+                          updateNumericConstraint(
                             index,
                             "result",
-                            e.target
-                              .value,
+                            e.target.value,
+                          )
+                        }
+                        onBlur={() =>
+                          finishConstraint(
+                            index,
+                            "result",
                           )
                         }
                         aria-label={`Resultado da restrição ${
                           index + 1
                         }`}
+                        title={
+                          isLibraryProblem
+                            ? "Campo bloqueado para problemas da biblioteca"
+                            : "Informe um valor numérico positivo"
+                        }
                       />
 
                       {!isLibraryProblem &&
