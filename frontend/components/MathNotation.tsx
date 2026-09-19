@@ -264,6 +264,41 @@ export function MathText({
   );
 }
 
+export function VariableText({
+  children,
+}: {
+  children: string;
+}) {
+  const parts = children.split(
+    /(\b(?:x|f)\d+\b)/g,
+  );
+
+  return (
+    <>
+      {parts.map((part, index) => {
+        if (
+          /^(?:x|f)\d+$/.test(part)
+        ) {
+          return (
+            <InlineMath
+              key={`${part}-${index}`}
+              math={symbolToLatex(part)}
+            />
+          );
+        }
+
+        return (
+          <span
+            key={`${part}-${index}`}
+          >
+            {part}
+          </span>
+        );
+      })}
+    </>
+  );
+}
+
 export function InlineFormula({
   math,
   className = "",

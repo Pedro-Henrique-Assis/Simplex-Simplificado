@@ -20,6 +20,7 @@ import {
   InlineFormula,
   MathBlock,
   MathText,
+  VariableText,
   divisionToLatex,
   expressionToLatex,
   fractionToLatex,
@@ -443,7 +444,9 @@ function ResolverContent() {
               </h2>
 
               <p className="mt-2 text-sm leading-6 text-black/65">
-                {problem.description}
+                <VariableText>
+                  {problem.description}
+                </VariableText>
               </p>
             </div>
           )}
@@ -1732,48 +1735,20 @@ function CurrentStep({
       eyebrow="Visualização 2D"
       title="A solução também aparece geometricamente"
     >
-      <p className="mb-5">
-        As retas representam as
-        restrições; a área
-        preenchida é a região
-        viável. Seus vértices são
-        pontos candidatos, e o
-        ponto destacado
-        corresponde à solução
-        ótima encontrada pelo
-        Simplex.
+      <p className="mb-5 leading-7 text-black/70">
+        <MathText>
+          {
+            "As retas representam os limites impostos pelas restrições. A área destacada corresponde à região viável, isto é, ao conjunto de combinações de $x_{1}$ e $x_{2}$ que respeitam simultaneamente todas as restrições do problema. Os vértices dessa região são os principais pontos candidatos à solução ótima, e o ponto destacado mostra a solução encontrada pelo método Simplex."
+          }
+        </MathText>
       </p>
 
       <Graph2D
-        graph={
-          result.graph_data
+        graph={result.graph_data}
+        optimalValue={
+          result.optimal_solution.z.fraction
         }
       />
-
-      <div className="mt-7 grid gap-2 sm:grid-cols-2">
-        {result.graph_data.vertices.map(
-          (vertex) => (
-            <div
-              key={
-                vertex.label
-              }
-              className="border-b border-black/10 pb-3 text-center"
-            >
-              <InlineFormula
-                math={`${
-                  vertex.label
-                } = \\left(${fractionToLatex(
-                  vertex.x
-                    .fraction,
-                )}, ${fractionToLatex(
-                  vertex.y
-                    .fraction,
-                )}\\right)`}
-              />
-            </div>
-          ),
-        )}
-      </div>
     </StepCard>
   );
 }

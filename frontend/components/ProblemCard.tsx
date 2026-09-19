@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Problem } from "@/types/simplex";
+import { VariableText } from "@/components/MathNotation";
 
 const labels = { easy: "Fácil", intermediate: "Intermediário", hard: "Difícil" };
 
@@ -12,7 +13,11 @@ export default function ProblemCard({ problem }: { problem: Problem }) {
           <span>{labels[problem.difficulty]}</span><span>•</span><span>Disponível</span><span>•</span><span>2 variáveis</span><span>•</span><span>{restrictions} restrições</span>
         </div>
         <h2 className="text-xl font-bold tracking-tight">{problem.title}</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-black/65">{problem.description}</p>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-black/65">
+          <VariableText>
+            {problem.description}
+          </VariableText>
+        </p>
       </div>
       <Link href={`/resolver?problem=${problem.id}`} className="btn-secondary mt-5 w-fit">Resolver</Link>
     </article>
