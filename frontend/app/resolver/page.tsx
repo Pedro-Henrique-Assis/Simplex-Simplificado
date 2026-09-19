@@ -172,6 +172,11 @@ function ResolverContent() {
   const isLibraryProblem = 
     problemId !== null;
 
+  const lockedFieldClass =
+    isLibraryProblem
+      ? "cursor-not-allowed bg-black/[0.05] text-black/50 opacity-70"
+      : "cursor-text";
+
   const [
     problem,
     setProblem,
@@ -833,11 +838,7 @@ function ResolverContent() {
                       </span>
 
                       <input
-                        className={`field !w-24 ${
-                          isLibraryProblem
-                            ? "cursor-not-allowed bg-black/[0.05] text-black/50"
-                            : "cursor-text"
-                        }`}
+                        className={`field !w-24 ${lockedFieldClass}`}
                         type="text"
                         inputMode="decimal"
                         autoComplete="off"
@@ -872,11 +873,7 @@ function ResolverContent() {
                       />
 
                       <input
-                        className={`field !w-24 ${
-                          isLibraryProblem
-                            ? "cursor-not-allowed bg-black/[0.05] text-black/50"
-                            : "cursor-text"
-                        }`}
+                        className={`field !w-24 ${lockedFieldClass}`}
                         type="text"
                         inputMode="decimal"
                         autoComplete="off"
@@ -911,11 +908,7 @@ function ResolverContent() {
                       />
 
                       <input
-                        className={`field !w-28 ${
-                          isLibraryProblem
-                            ? "cursor-not-allowed bg-black/[0.05] text-black/50"
-                            : "cursor-text"
-                        }`}
+                        className={`field !w-28 ${lockedFieldClass}`}
                         type="text"
                         inputMode="decimal"
                         autoComplete="off"
