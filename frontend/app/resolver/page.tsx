@@ -106,6 +106,9 @@ function ResolverContent() {
   const problemId =
     searchParams.get("problem");
 
+  const isLibraryProblem = 
+    problemId !== null;
+
   const [
     problem,
     setProblem,
@@ -612,21 +615,15 @@ function ResolverContent() {
                         }`}
                       />
 
-                      {constraints.length ===
-                        3 &&
+                      {!isLibraryProblem &&
+                        constraints.length === 3 &&
                         index === 2 && (
                           <button
                             type="button"
                             className="ml-auto cursor-pointer text-sm font-semibold underline"
                             onClick={() =>
-                              setConstraints(
-                                (
-                                  value,
-                                ) =>
-                                  value.slice(
-                                    0,
-                                    2,
-                                  ),
+                              setConstraints((value) =>
+                                value.slice(0, 2)
                               )
                             }
                           >
@@ -638,22 +635,18 @@ function ResolverContent() {
                 )}
               </div>
 
-              {constraints.length <
-                3 && (
+              {!isLibraryProblem && constraints.length < 3 && (
                 <button
                   type="button"
                   className="mt-4 cursor-pointer text-sm font-semibold underline decoration-[#80FFF6] decoration-4 underline-offset-4"
                   onClick={() =>
-                    setConstraints(
-                      (value) => [
-                        ...value,
-                        blankConstraint(),
-                      ],
-                    )
+                    setConstraints((value) => [
+                      ...value,
+                      blankConstraint(),
+                    ])
                   }
                 >
-                  + Adicionar terceira
-                  restrição
+                  + Adicionar terceira restrição
                 </button>
               )}
             </fieldset>
