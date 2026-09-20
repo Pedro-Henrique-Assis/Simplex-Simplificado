@@ -172,7 +172,7 @@ Exemplo de payload:
 
 ## Limitações assumidas
 
-Este MVP trabalha apenas com:
+Este sistema trabalha apenas com:
 
 - maximização;
 - duas variáveis principais (`x1` e `x2`);
