@@ -1,4 +1,4 @@
-# SimplexLab — MVP educacional do método Simplex
+# SimplexLab — Sistema educacional do método Simplex
 
 O **SimplexLab** é um sistema web educacional para alunos de graduação aprenderem o método Simplex de Pesquisa Operacional de forma guiada. O foco não é apenas obter a solução ótima: a aplicação explica a forma padrão, variáveis de folga, escolha de pivôs, teste da razão, operações de linha, otimalidade e interpretação gráfica.
 
